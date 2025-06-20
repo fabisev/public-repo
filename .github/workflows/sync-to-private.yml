@@ -1,0 +1,38 @@
+name: Sync to Private
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Public Repo
+        uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          persist-credentials: false
+
+      - name: Checkout Private Repo
+        uses: actions/checkout@v4
+        with:
+          repository: fabisev/private-repo
+          path: private
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          persist-credentials: false
+
+      - name: Mirror files into private
+        run: |
+          rsync -av --delete ./. private/ --exclude .git
+          cd private
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Sync from public at ${{ github.sha }}" || echo "Nothing to commit"
+
+      - name: Push to Private
+        working-directory: private
+        run: git push origin main
