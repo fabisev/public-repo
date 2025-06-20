@@ -36,7 +36,8 @@ jobs:
         run: |
           rsync -av --delete ../ ./ \
             --exclude .git \
-            --exclude private
+            --exclude private \
+            --exclude .github
 
       # 5. Commit & push only inside private
       - name: Commit & Push
