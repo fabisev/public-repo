@@ -1,2 +1,2 @@
 # public-repo
-random
+testing smth
