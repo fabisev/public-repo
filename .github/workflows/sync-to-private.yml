@@ -8,29 +8,27 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout public via SSH
-      - name: Checkout Public
-        uses: actions/checkout@v4
-        with:
-          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          persist-credentials: false
-
-      # 2. Start ssh-agent
-      - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.9.1
+      # 1. Start ssh-agent & load the SSH_PRIVATE_KEY secret
+      - name: Set up SSH key
+        uses: actions/ssh-agent@v0.1.1
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 3. Clone private into ./private
+      # 2. Checkout the public repo (will use the loaded agent)
+      - name: Checkout Public
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # 3. Clone private into ./private (via ssh-agent)
       - name: Clone Private
         run: |
           git clone git@github.com:fabisev/private-repo.git private
           cd private
           git checkout -b main || git checkout main
 
-      # 4. Mirror **from** workspace root **into** private repo root
+      # 4. Rsync into the private repo root
       - name: Rsync Public → Private
         working-directory: private
         run: |
@@ -38,7 +36,7 @@ jobs:
             --exclude .git \
             --exclude private
 
-      # 5. Commit & push only inside private
+      # 5. Commit & push inside private
       - name: Commit & Push
         working-directory: private
         run: |
