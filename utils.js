@@ -12,6 +12,17 @@ function add(a, b) {
   return a + b;
 }
 
+/**
+ * Performs a simple substraction
+ * @param {number} a - First number
+ * @param {number} b - Second number
+ * @returns {number} Difference of a and b
+ */
+function substract(a, b) {
+  return a - b;
+}
+
+
 module.exports = {
   add
 };
