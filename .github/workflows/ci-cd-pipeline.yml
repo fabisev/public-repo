@@ -1,12 +1,26 @@
-name: CI/CD Pipeline - Test and Build
+name: CI/CD Pipeline - Test, Build and Publish
 
 on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      publish_npm:
+        description: 'Publish to npm registry'
+        required: false
+        default: false
+        type: boolean
+      publish_github_packages:
+        description: 'Publish to GitHub Packages'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   lint:
@@ -74,3 +88,76 @@ jobs:
           name: build-files
           path: dist/
           retention-days: 7
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: dist/
+      
+      - name: Create release archive
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          zip -r public-repo-${VERSION}.zip dist/
+          echo "RELEASE_VERSION=${VERSION}" >> $GITHUB_ENV
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: public-repo-${{ env.RELEASE_VERSION }}.zip
+          name: Release ${{ env.RELEASE_VERSION }}
+          draft: false
+          prerelease: false
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
+      - name: Copy artifacts to S3
+        run: |
+          aws s3 cp public-repo-${{ env.RELEASE_VERSION }}.zip s3://${{ secrets.S3_BUCKET }}/releases/
+          aws s3 cp --recursive dist/ s3://${{ secrets.S3_BUCKET }}/releases/${{ env.RELEASE_VERSION }}/
+      
+      # Optional: Publish to npm registry
+      - name: Publish to npm
+        if: ${{ github.event.inputs.publish_npm == 'true' }}
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      # Optional: Publish to GitHub Packages
+      - name: Setup Node.js for GitHub Packages
+        if: ${{ github.event.inputs.publish_github_packages == 'true' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@${{ github.repository_owner }}'
+      
+      - name: Publish to GitHub Packages
+        if: ${{ github.event.inputs.publish_github_packages == 'true' }}
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
