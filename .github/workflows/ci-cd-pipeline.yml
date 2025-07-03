@@ -133,7 +133,9 @@ jobs:
         run: |
           # Ensure we have the package.json file
           if [ -f "package.json" ]; then
-            npm publish --access public
+            # Replace placeholder with actual owner
+            sed -i "s/\$GITHUB_REPOSITORY_OWNER/${GITHUB_REPOSITORY_OWNER}/g" package.json
+            npm publish --registry=https://npm.pkg.github.com
           else
             echo "No package.json found, skipping GitHub Packages publish"
           fi

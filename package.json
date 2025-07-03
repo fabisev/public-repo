@@ -1,8 +1,11 @@
 {
-  "name": "public-repo",
-  "version": "1.0.0",
+  "name": "@$GITHUB_REPOSITORY_OWNER/public-repo",
+  "version": "1.0.1",
   "description": "A sample Node.js project",
   "main": "index.js",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "lint": "eslint .",
     "test": "jest",
