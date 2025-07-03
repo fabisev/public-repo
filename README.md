@@ -7,8 +7,7 @@ This repository includes an automated artifact publishing mechanism that:
 
 1. Builds artifacts in GitHub Actions
 2. Publishes artifacts to GitHub Releases when a tag is pushed
-3. Copies artifacts to an S3 bucket for internal consumption
-4. Optionally publishes to npm registry or GitHub Packages
+3. Publishes packages to GitHub Packages
 
 ### How to Publish
 
@@ -25,7 +24,7 @@ To automatically publish a new release:
 2. The CI/CD pipeline will automatically:
    - Build the project
    - Create a GitHub Release with the artifacts
-   - Copy the artifacts to the configured S3 bucket
+   - Publish the package to GitHub Packages
 
 #### Manual Publishing
 
@@ -34,14 +33,9 @@ You can also manually trigger the publishing workflow:
 1. Go to the Actions tab in the GitHub repository
 2. Select the "CI/CD Pipeline - Test, Build and Publish" workflow
 3. Click "Run workflow"
-4. Choose whether to publish to npm registry and/or GitHub Packages
+4. Choose to publish to GitHub Packages
 5. Click "Run workflow"
 
 ### Required Secrets
 
-The following secrets need to be configured in your GitHub repository:
-
-- `AWS_ACCESS_KEY_ID`: AWS access key with permissions to write to S3
-- `AWS_SECRET_ACCESS_KEY`: AWS secret key
-- `S3_BUCKET`: Name of the S3 bucket for artifacts
-- `NPM_TOKEN`: NPM token (only needed if publishing to npm registry)
+No additional secrets are required for GitHub Packages publishing as it uses the automatically provided `GITHUB_TOKEN`.
