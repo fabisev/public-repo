@@ -1,5 +1,5 @@
 # public-repo
-testing to see if sync works 
+testing to see if conlicts would work or not 
 
 ## Artifact Publishing
 
