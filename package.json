@@ -1,6 +1,6 @@
 {
   "name": "@$GITHUB_REPOSITORY_OWNER/public-repo",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "A sample Node.js project",
   "main": "index.js",
   "publishConfig": {
