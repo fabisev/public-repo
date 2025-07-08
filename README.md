@@ -1,4 +1,4 @@
-# public-repo
+# private-repo
 
 ## Artifact Publishing
 
