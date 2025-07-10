@@ -1,0 +1,23 @@
+# Version control
+.git
+.gitignore
+
+# Node.js
+node_modules
+npm-debug.log
+
+# Testing
+coverage
+__tests__
+
+# Development files
+.eslintrc.js
+jest.config.js
+*.md
+.github
+
+# Build artifacts (except dist)
+# We need dist for the container
+*.zip
+*.sha256
+*.asc
